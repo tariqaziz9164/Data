@@ -1,96 +1,175 @@
-import pandas as pd
 import streamlit as st
-import plotly_express as px
-#from PIL import Image
+import pandas as pd
+import plotly.express as px
+from PIL import Image
+
+container = st.container()
+col1,col2 = st.columns(2)
 
 
 
-def colsType(df):
-    st.header("Columns Data Types")
-    st.dataframe(df.dtypes)
-
-def missing(df):
-    st.header("Missing Values in Your Data Set")
-    st.dataframe(df.isnull().sum())
-
-def columnsNames(df):
-    st.header("Columns in your Data Set")
-    st.dataframe(df.columns)
-
-def statistics(df):
-    st.header('Data Statistics')
-    st.dataframe(df.describe())
+@st.cache
+def load_data(file):
+    return pd.read_csv(file)
 
 
 
-def plot_data(df):
-    st.header('Customize your plots from sidebar')
+def sort_data(df):
+    st.sidebar.header("Data Filtering")
+    
+    # Sort Data
+    sort_column = st.sidebar.selectbox("Sort by", df.columns)
+    df = df.sort_values(by=sort_column)
+    return df
 
-    st.sidebar.title("Plot options")
+    
+    
+def group_by(df):
+     # Group Data
+    group_column = st.sidebar.selectbox("Group by Sum",df.columns)
+    grouped_df = df.groupby(group_column).sum()
+    return grouped_df
 
-    x_col = st.sidebar.selectbox("Select X axis column", df.columns)
-
-    y_col = st.sidebar.selectbox("Select Y axis column", df.columns)
-
-    chart_type = st.sidebar.selectbox("Select chart type", ["scatter", "bar", "line"])
+def group_by_mean(df):
+     # Group Data
+    group_column = st.sidebar.selectbox("Group by Mean",df.columns)
+    grouped_df_mean = df.groupby(group_column).mean()
+    return grouped_df_mean   
+    
 
     
 
-    if chart_type == 'scatter':
-        st.plotly_chart(px.scatter(df, x=x_col, y=y_col))
+  
+       
+def analyze_data(data):
+    # Perform basic data analysis
+    container.write(" # Data Analysis # ")
+    container.write("File Header")
+    container.write(data.head())
+    container.write("Description")
+    container.write(data.describe())
+    container.write("Data Corelation")
+    container.write(data.corr())
+    container.write("Data Rank")
+    container.write(data.rank())
+      
+    
+    st.empty()   
+    with col1:
+          
+       st.write("Columns Names ", data.columns)
+    with col1:
+          
+       st.write("Columns Data Types: ", data.dtypes)
 
-    elif chart_type == 'bar':
-        st.plotly_chart(px.bar(df, x=x_col, y=y_col))
+    with col2:
+       st.write("Missing Values: ", data.isnull().sum())
+    
+    
+    with col2:
+       st.write("Unique Values: ", data.nunique())
+       
+       
+    with col2:   
+       st.write("standerd deviation:", data.std())
+       
+       
+    
 
-    elif chart_type == 'line':
-        st.plotly_chart(px.line(df, x=x_col, y=y_col))
+    sorted_df = sort_data(data)
+    
+        
+    container.write("Sort Data")
+    container.write(sorted_df)
+    
+    with col1:
+       st.write("Number of rows: ", data.shape[0])
+
+       
+    with col1:   
+       st.write("Number of columns: ", data.shape[1])
+
+    
+
+    groupBySum = group_by(data)
+        
+    container.write("Group by sum")
+    container.write(groupBySum)
+
+    groupByMean = group_by_mean(data)
+    container.write("Group by mean")
+    container.write(groupByMean)
+
+def create_chart(chart_type, data, x_column, y_column):
+
+    container.write(" # Data Visualization # ")
+    if chart_type == "Bar":
+    
+        st.header("Bar Chart")
+        fig = px.bar(data, x=x_column, y=y_column,color = 'Country')
+        st.plotly_chart(fig)
+
+    elif chart_type == "Line":
+        st.header("Line Chart")
+        fig = px.line(data, x=x_column, y=y_column)
+        st.plotly_chart(fig)
+
+    elif chart_type == "Scatter":
+        st.header("Scatter Chart")
+        fig = px.scatter(data, x=x_column, y=y_column,color="Country",size = "AQI Value")
+        st.plotly_chart(fig)
+
+    elif chart_type == "Histogram":
+        st.header("Histogram Chart")
+
+        fig = px.histogram(data, x=x_column, y=y_column,color = "Country",log_x = False,log_y = False,pattern_shape = "AQI Category")
+        st.plotly_chart(fig)
+        
+
+    elif chart_type == "pie":
+        st.header("Geo Chart")
+
+        fig = px.pie(data,names = x_column,values = y_column,color = "Country")
+        st.plotly_chart(fig)
+
+
     
     
-    
+
 def main():
+
     
-    #col1, col2 = st.columns(2)
-    
-    
-    st.image('./pandasFuny.jpg', caption='Data is Fun', width=100, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
-    st.title("Financial Dashboard")
+    image = Image.open("pandasFuny.jpg")
 
-    st.sidebar.header("Upload your Data File")
-
-    uploaded_file = st.sidebar.file_uploader("upload File")
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-
-    else:
-        st.error("Please upload a file")
-        return
-
-
-    st.header("Head Lines of Uploaded File")
-    st.dataframe(df.head())
-    options = st.sidebar.radio('Pages',options=['Data Statistic','Columns','Columns Types','Missing Values','Plots'])
-    if options == "Data Statistic":
-        statistics(df)
-    
-    elif options == "Plots":
-        plot_data(df)
-
-    elif options == "Columns":
-        columnsNames(df)
-
-    elif options == "Missing Values":
-        missing(df) 
-
-
-    elif options == "Columns Types":
-        colsType(df)           
-   
     
     
+    container.image(image,width = 100)
+    container.write(" # Data Analysis and Visualization # ")
     
+    st.sidebar.image(image,width = 50)
+    file = st.sidebar.file_uploader("Upload a data set in CSV or EXCEL format", type=["csv","excel"])
 
-   
-    
+    options = st.sidebar.radio('Pages',options = ['Data Analysis','Data visualization'])
+
+    if file is not None:
+        data = load_data(file)
+
+        if options == 'Data Analysis':
+           analyze_data(data)
+
+        if options =='Data visualization':
+
+            #Create a sidebar for user options
+            st.sidebar.title("Chart Options")
+
+            chart_type = st.sidebar.selectbox("Select a chart type", ["Bar", "Line", "Scatter", "Histogram","pie"])
+
+            x_column = st.sidebar.selectbox("Select the X column", data.columns)
+
+            y_column = st.sidebar.selectbox("Select the Y column", data.columns)
+
+            create_chart(chart_type, data, x_column, y_column)
+        
 if __name__ == "__main__":
     main()
     
