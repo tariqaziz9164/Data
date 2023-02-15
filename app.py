@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly_express as px
 from PIL import Image
 
 container = st.container()
