@@ -30,11 +30,11 @@ def group_by(df):
     grouped_df = df.groupby(group_column).sum()
     return grouped_df
 
-def group_by_mean(df):
-     # Group Data
-    group_column = st.sidebar.selectbox("Group by Mean",df.columns)
-    grouped_df_mean = df.groupby(group_column).mean()
-    return grouped_df_mean   
+#def group_by_mean(df):
+#     # Group Data
+#    group_column = st.sidebar.selectbox("Group by Mean",df.columns)
+#    grouped_df_mean = df.groupby(group_column).mean()
+#    return grouped_df_mean   
     
 
     
@@ -96,9 +96,9 @@ def analyze_data(data):
     container.write("Group by sum")
     container.write(groupBySum)
 
-    groupByMean = group_by_mean(data)
-    container.write("Group by mean")
-    container.write(groupByMean)
+    #groupByMean = group_by_mean(data)
+    #container.write("Group by mean")
+    #container.write(groupByMean)
 
 def create_chart(chart_type, data, x_column, y_column):
 
