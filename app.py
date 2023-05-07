@@ -8,9 +8,9 @@ col1,col2 = st.columns(2)
 
 
 
-@st.cache
-def load_data(file):
-    return pd.read_csv(file)
+#@st.cache
+#def load_data(file):
+#    return pd.read_csv(file)
 
 
 
@@ -138,38 +138,43 @@ def create_chart(chart_type, data, x_column, y_column):
 
 def main():
 
-    
     image = Image.open("pandasFuny.jpg")
-
     
-    
-    container.image(image,width = 100)
+    container.image(image, width=100)
     container.write(" # Data Analysis and Visualization # ")
     
-    st.sidebar.image(image,width = 50)
-    file = st.sidebar.file_uploader("Upload a data set in CSV or EXCEL format", type=["csv","excel"])
+    st.sidebar.image(image, width=50)
+    
+    file_or_url = st.sidebar.radio('Select Data Input', ['Upload Local File', 'Enter Online Dataset URL'])
+    
+    if file_or_url == 'Upload Local File':
+        file = st.sidebar.file_uploader("Upload a data set in CSV or Excel format", type=["csv", "xlsx", "xls"])
+        if file is not None:
+            data = pd.read_csv(file)
+    else:
+        url = st.sidebar.text_input("Enter Online Dataset URL")
+        if url:
+            data = pd.read_csv(url)
 
     options = st.sidebar.radio('Pages',options = ['Data Analysis','Data visualization'])
 
-    if file is not None:
-        data = load_data(file)
+    if 'data' in locals() and not data.empty:
 
         if options == 'Data Analysis':
            analyze_data(data)
 
         if options =='Data visualization':
-
             #Create a sidebar for user options
             st.sidebar.title("Chart Options")
 
-            chart_type = st.sidebar.selectbox("Select a chart type", ["Bar", "Line", "Scatter", "Histogram","pie"])
+            chart_type = st.sidebar.selectbox("Select a chart type", ["Bar", "Line", "Scatter", "Histogram", "Pie"])
 
             x_column = st.sidebar.selectbox("Select the X column", data.columns)
 
             y_column = st.sidebar.selectbox("Select the Y column", data.columns)
 
             create_chart(chart_type, data, x_column, y_column)
-        
+
 if __name__ == "__main__":
     main()
     
