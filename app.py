@@ -48,8 +48,8 @@ def analyze_data(data):
     container.write(data.head())
     container.write("Description")
     container.write(data.describe())
-    container.write("Data Corelation")
-    container.write(data.corr())
+    #container.write("Data Corelation")
+    #container.write(data.corr())
     container.write("Data Rank")
     container.write(data.rank())
       
