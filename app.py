@@ -106,7 +106,7 @@ def create_chart(chart_type, data, x_column, y_column):
     if chart_type == "Bar":
     
         st.header("Bar Chart")
-        fig = px.bar(data, x=x_column, y=y_column,color = 'Country')
+        fig = px.bar(data, x=x_column, y=y_column)
         st.plotly_chart(fig)
 
     elif chart_type == "Line":
@@ -116,20 +116,20 @@ def create_chart(chart_type, data, x_column, y_column):
 
     elif chart_type == "Scatter":
         st.header("Scatter Chart")
-        fig = px.scatter(data, x=x_column, y=y_column,color="Country",size = "AQI Value")
+        fig = px.scatter(data, x=x_column, y=y_column)
         st.plotly_chart(fig)
 
     elif chart_type == "Histogram":
         st.header("Histogram Chart")
 
-        fig = px.histogram(data, x=x_column, y=y_column,color = "Country",log_x = False,log_y = False,pattern_shape = "AQI Category")
+        fig = px.histogram(data, x=x_column, y=y_column,log_x = False,log_y = False)
         st.plotly_chart(fig)
         
 
     elif chart_type == "pie":
         st.header("Geo Chart")
 
-        fig = px.pie(data,names = x_column,values = y_column,color = "Country")
+        fig = px.pie(data,names = x_column,values = y_column)
         st.plotly_chart(fig)
 
 
