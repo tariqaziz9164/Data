@@ -85,8 +85,8 @@ def analyze_data(data):
        st.write("Unique Values: ", data.nunique())
        
        
-    with col2:   
-       st.write("standerd deviation:", data.std())
+    #with col2:   
+    #   st.write("standerd deviation:", data.std())
        
        
     
