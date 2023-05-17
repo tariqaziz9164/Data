@@ -48,8 +48,8 @@ def analyze_data(data):
     container.write(data.head())
     container.write("Description")
     container.write(data.describe())
-    container.write("Data Corelation")
-    container.write(data.corr())
+    #container.write("Data Corelation")
+    #container.write(data.corr())
     container.write("Data Rank")
     container.write(data.rank())
 
@@ -108,7 +108,7 @@ def create_chart(chart_type, data, x_column, y_column):
         st.header("Bar Chart")
         
         color_column = st.sidebar.selectbox("Select column for color ", data.columns)
-        pattern_column = st.sidebar.selectbox("Select column for shap ", data.columns)
+        pattern_column = st.sidebar.selectbox("Select column for pattern ", data.columns)
         if color_column:
            fig = px.bar(data, x=x_column, y=y_column,color=color_column,pattern_shape=pattern_column,barmode="group")
            st.plotly_chart(fig)
