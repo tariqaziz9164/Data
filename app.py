@@ -108,8 +108,9 @@ def create_chart(chart_type, data, x_column, y_column):
         st.header("Bar Chart")
         
         color_column = st.sidebar.selectbox("Select column for color ", data.columns)
+        pattern_column = st.sidebar.selectbox("Select column for shap ", data.columns)
         if color_column:
-           fig = px.bar(data, x=x_column, y=y_column,color=color_column,pattern_shape=color_column,barmode="group")
+           fig = px.bar(data, x=x_column, y=y_column,color=color_column,pattern_shape=pattern_column,barmode="group")
            st.plotly_chart(fig)
         else:
            fig = px.bar(data, x=x_column, y=y_column,barmode="group")
