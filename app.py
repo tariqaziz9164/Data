@@ -33,6 +33,7 @@ def group_by(df):
 def group_by_mean(df):
      # Group Data
     group_column = st.sidebar.selectbox("Group by Mean",df.columns)
+    df[group_column] = pd.to_numeric(df[group_column], errors='coerce')
     grouped_df_mean = df.groupby(group_column).mean()
     return grouped_df_mean   
     
