@@ -108,7 +108,7 @@ def select_columns(df):
 def analyze_data(data):
     
     show_file_header(data)
-    st.write("### Select Columns")
+    st.write("### Select Columns to make your Data Set for Analysis")
     all_columns = data.columns.tolist()
     options_key = "_".join(all_columns)
     selected_columns = st.multiselect("Select columns", options=all_columns)
