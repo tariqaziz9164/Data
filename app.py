@@ -101,13 +101,28 @@ def select_columns(df):
     else:
         st.warning("Please select at least one column.")
 
+def select_and_rename_column(df):
+    st.write("### Select and Rename Columns")
     
+    # Select columns to rename
+    all_columns = df.columns.tolist()
+    selected_columns = st.multiselect("Select columns to rename", options=all_columns)
+    
+    # Rename the selected columns
+    for column in selected_columns:
+        new_column_name = st.text_input(f"Enter new name for column '{column}'", value=column)
+        if column != new_column_name:
+            df.rename(columns={column: new_column_name}, inplace=True)
+            st.write(f"Column '{column}' renamed as '{new_column_name}' successfully!")
+    
+    return df    
 
   
        
 def analyze_data(data):
     
     show_file_header(data)
+    st.write("Columns in you file are ",data.columns)
     st.write("### Select Columns to make your Data Set for Analysis")
     all_columns = data.columns.tolist()
     options_key = "_".join(all_columns)
@@ -115,6 +130,7 @@ def analyze_data(data):
     
     if selected_columns:
         sub_df = data[selected_columns]
+        sub_df = select_and_rename_column(sub_df)
         st.write("### Sub DataFrame")
         st.write(sub_df.head())
 
