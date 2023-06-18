@@ -117,6 +117,79 @@ def select_and_rename_column(df):
     
     return df    
 
+
+def show_missing_values_percentage(df):
+    st.write("### Missing Values Percentage")
+    
+    # Calculate the percentage of missing values for each column
+    missing_percentage = df.isnull().sum() / len(df) * 100
+    
+    # Create a DataFrame to store the missing values percentage
+    missing_df = pd.DataFrame({'Column': missing_percentage.index, 'Missing Percentage': missing_percentage.values})
+    
+    # Display the missing values percentage DataFrame
+    st.write("Percentage of missing values",missing_df)
+
+
+#aggregation funtion
+def agg(df):
+    # Allow the user to select columns for aggregation
+    aggregation_columns = st.multiselect("Select columns for aggregation", options=df.columns)
+    
+    # Allow the user to select an aggregation function
+    aggregation_function = st.selectbox("Select an aggregation function", options=["Sum", "Mean", "Median"])
+    
+    # Perform the aggregation
+    if aggregation_columns:
+        if aggregation_function == "Sum":
+            aggregated_values = sub_df[aggregation_columns].sum()
+        elif aggregation_function == "Mean":
+            aggregated_values = sub_df[aggregation_columns].mean()
+        elif aggregation_function == "Median":
+            aggregated_values = sub_df[aggregation_columns].median()
+        
+        # Display the aggregated values
+        st.write(f"Aggregated {aggregation_function} for {aggregation_columns}")
+        st.write(aggregated_values)    
+
+#remove duplicats
+def remove_duplicates(df):
+    st.write("### Remove Duplicates")
+    
+    # Select columns for identifying duplicates
+    columns = st.multiselect("Select columns for identifying duplicates", options=df.columns)
+    
+    if columns:
+        # Remove duplicates based on selected columns
+        df.drop_duplicates(subset=columns, inplace=True)
+        
+        st.write("Duplicates removed successfully!")
+        
+    return df
+#search and replace a value in column
+def search_and_replace(df):
+    st.write("### Search and Replace")
+    
+    # Select a column to search and replace
+    column = st.selectbox("Select a column", options=df.columns)
+    
+    if column:
+        # Get the search string from the user
+        search_string = st.text_input("Enter the search string")
+        
+        # Get the replace value from the user
+        replace_value = st.text_input("Enter the replace value")
+        
+        # Perform the search and replace operation
+        if search_string in df[column].values:
+            df[column] = df[column].replace(search_string, replace_value)
+            st.write("Search and replace completed!")
+            st.write(df[column])
+
+        else:
+            st.warning("The search string is not present in the selected column.")
+        
+    #return df
   
        
 def analyze_data(data):
@@ -134,6 +207,8 @@ def analyze_data(data):
         st.write("### Sub DataFrame")
         st.write(sub_df.head())
 
+        remove_duplicates(sub_df)
+
         st.write("Description")
         st.write(sub_df.describe())
         st.write("Data Rank")
@@ -144,6 +219,7 @@ def analyze_data(data):
         sorted_df = sub_df.sort_values(by=sort_column)
         st.write(sorted_df)
 
+        show_missing_values_percentage(sub_df)
         show_columns_info(sub_df)
         show_missing_values(sub_df)
         show_unique_values(sub_df)
@@ -151,6 +227,47 @@ def analyze_data(data):
         show_data_shape(sub_df)
         show_data_correlation(sub_df)
         filter_rows(sub_df)
+
+        # Allow the user to select columns for aggregation
+        aggregation_columns = st.multiselect("Select columns for aggregation", options=sub_df.columns)
+    
+        # Allow the user to select an aggregation function
+        aggregation_function = st.selectbox("Select an aggregation function", options=["Sum", "Mean", "Median", "Min", "Max", "Count"])
+    
+        # Additional options for customization
+        if aggregation_function in ["Sum", "Mean", "Median"]:
+            show_aggregated_values = st.checkbox("Show aggregated values")
+        else:
+            show_aggregated_values = False
+    
+        # Perform the aggregation
+        if aggregation_columns:
+            if aggregation_function == "Sum":
+                aggregated_values = sub_df[aggregation_columns].sum()
+            elif aggregation_function == "Mean":
+                aggregated_values = sub_df[aggregation_columns].mean()
+            elif aggregation_function == "Median":
+                aggregated_values = sub_df[aggregation_columns].median()
+            elif aggregation_function == "Min":
+                aggregated_values = sub_df[aggregation_columns].min()
+            elif aggregation_function == "Max":
+                aggregated_values = sub_df[aggregation_columns].max()
+            elif aggregation_function == "Count":
+                aggregated_values = sub_df[aggregation_columns].count()
+        
+            # Display the aggregated values if selected
+            if show_aggregated_values:
+                st.write(f"Aggregated {aggregation_function} for {aggregation_columns}")
+                st.write(aggregated_values)
+        
+            # Additional customization options
+            if aggregation_function in ["Sum", "Mean", "Median"]:
+                plot_aggregated_values = st.checkbox("Plot aggregated values")
+                if plot_aggregated_values:
+                    # Plot the aggregated values
+                    st.bar_chart(aggregated_values)
+
+        search_and_replace(sub_df)
 
 
 
