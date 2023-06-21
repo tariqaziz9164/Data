@@ -190,13 +190,59 @@ def search_and_replace(df):
             st.warning("The search string is not present in the selected column.")
         
     #return df
+
+#Change columns datatypes 
+def change_column_data_types(df):
+    st.write("### Change Column Data Types")
+    
+    # Select columns to change data types
+    all_columns = df.columns.tolist()
+    selected_columns = st.multiselect("Select columns to change data types", options=all_columns)
+    
+    # Get the new data types from the user
+    new_data_types = {}
+    for column in selected_columns:
+        st.write(f"Column: {column}")
+        current_data_type = df[column].dtype
+        st.write(f"Current Data Type: {current_data_type}")
+        new_data_type = st.selectbox("Select new data type", options=['object', 'int', 'float', 'datetime', 'boolean'])
+        new_data_types[column] = new_data_type
+    
+    # Change the data types of selected columns
+    for column, data_type in new_data_types.items():
+        try:
+            if data_type == 'object':
+                df[column] = df[column].astype(str)
+            elif data_type == 'int':
+                df[column] = pd.to_numeric(df[column], errors='coerce', downcast='integer')
+            elif data_type == 'float':
+                df[column] = pd.to_numeric(df[column], errors='coerce', downcast='float')
+            elif data_type == 'datetime':
+                df[column] = pd.to_datetime(df[column], errors='coerce')
+            elif data_type == 'boolean':
+                df[column] = df[column].astype(bool)
+            
+            st.write(f"Column '{column}' data type changed to '{data_type}' successfully!")
+        except Exception as e:
+            st.error(f"Error occurred while changing data type of column '{column}': {str(e)}")
+    
+    return df    
   
        
 def analyze_data(data):
+
+    container = st.container()
+    col1,col2 = st.columns(2)
     
-    show_file_header(data)
-    st.write("Columns in you file are ",data.columns)
+    with container:
+         st.write("File Header",data.head())
+    with col1:
+         st.write("Columns in you file are ",data.columns)
     st.write("### Select Columns to make your Data Set for Analysis")
+    
+    with col2:
+        st.write("Data Types " ,data.dtypes)
+
     all_columns = data.columns.tolist()
     options_key = "_".join(all_columns)
     selected_columns = st.multiselect("Select columns", options=all_columns)
@@ -208,28 +254,33 @@ def analyze_data(data):
         st.write(sub_df.head())
 
         remove_duplicates(sub_df)
-
+        
+        change_column_type_df = change_column_data_types(sub_df)
+        st.write("Columns Types are changed",change_column_type_df)
         st.write("Description")
-        st.write(sub_df.describe())
+        st.write(change_column_type_df.describe().T)
         st.write("Data Rank")
-        st.write(sub_df.rank())
+        st.write(change_column_type_df.rank())
 
         st.sidebar.header("Data Sorted")
-        sort_column = st.selectbox("Select column for sorting", sub_df.columns)
-        sorted_df = sub_df.sort_values(by=sort_column)
+        sort_column = st.selectbox("Select column for sorting", change_column_type_df.columns)
+        sorted_df = change_column_type_df.sort_values(by=sort_column)
         st.write(sorted_df)
 
-        show_missing_values_percentage(sub_df)
-        show_columns_info(sub_df)
-        show_missing_values(sub_df)
-        show_unique_values(sub_df)
-        show_standard_deviation(sub_df)
-        show_data_shape(sub_df)
-        show_data_correlation(sub_df)
-        filter_rows(sub_df)
+        #show_missing_values_percentage(sub_df)
+
+        corr(change_column_type_df)
+        
+        show_missing_values(change_column_type_df)
+        show_percent_missing(change_column_type_df)
+        show_unique_values(change_column_type_df)
+        show_standard_deviation(change_column_type_df)
+        show_data_shape(change_column_type_df)
+        show_data_correlation(change_column_type_df)
+        filter_rows(change_column_type_df)
 
         # Allow the user to select columns for aggregation
-        aggregation_columns = st.multiselect("Select columns for aggregation", options=sub_df.columns)
+        aggregation_columns = st.multiselect("Select columns for aggregation", options=change_column_type_df.columns)
     
         # Allow the user to select an aggregation function
         aggregation_function = st.selectbox("Select an aggregation function", options=["Sum", "Mean", "Median", "Min", "Max", "Count"])
@@ -297,18 +348,18 @@ def show_sorted_data(sorted_df):
 # Define select_group_column, perform_grouping, and apply_additional_aggregation functions here
 
 
-def show_columns_info(data):
-    #col1, col2 = st.columns(2)
-    st.write("Columns Names")
-    st.write(data.columns)
-    st.write("Columns Data Types")
-    st.write(data.dtypes)
+
 
 
 def show_missing_values(data):
     #col1 = st.beta_column()
     st.write("Missing Values")
     st.write(data.isnull().sum())
+
+def show_percent_missing(data):
+    st.write("Missing Percentage")
+    st.write(data.isna().mean().mul(100))
+
 
 
 def show_unique_values(data):
@@ -335,6 +386,10 @@ def show_data_correlation(data):
     #col1 = st.beta_column()
     st.write("Data Correlation")
     st.write(data.corr(numeric_only=True))
+
+def corr(data):
+    st.write("Data correlation")
+    st.write(data.corr().style.background_gradient(cmap='RdBu', vmin=-1,vmax=1))    
 
 
 def filter_rows(data):
