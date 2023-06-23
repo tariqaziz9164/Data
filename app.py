@@ -262,7 +262,7 @@ def analyze_data(data):
         st.write("Data Rank")
         st.write(change_column_type_df.rank())
 
-        st.sidebar.header("Data Sorted")
+        st.subheader("Sort Data")
         sort_column = st.selectbox("Select column for sorting", change_column_type_df.columns)
         sorted_df = change_column_type_df.sort_values(by=sort_column)
         st.write(sorted_df)
@@ -498,7 +498,7 @@ def main():
         else:
             st.warning("No file or empty file")
 
-    if options == 'Data visualization':
+    elif options == 'Data visualization':
         if data is not None:
             # Create a sidebar for user options
             st.sidebar.title("Chart Options")
