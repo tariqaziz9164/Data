@@ -133,6 +133,9 @@ def search_and_replace(df):
         
 
 #Change columns datatypes 
+import streamlit as st
+import pandas as pd
+
 def change_column_data_types(df):
     st.write("### Change Column Data Types")
     
@@ -149,26 +152,28 @@ def change_column_data_types(df):
         new_data_type = st.selectbox("Select new data type", options=['object', 'int', 'float', 'datetime', 'boolean'])
         new_data_types[column] = new_data_type
     
+    # Create a copy of the DataFrame to modify
+    modified_df = df.copy()
+    
     # Change the data types of selected columns
     for column, data_type in new_data_types.items():
         try:
             if data_type == 'object':
-                df[column] = df[column].astype(str)
+                modified_df[column] = modified_df[column].astype(str)
             elif data_type == 'int':
-                df[column] = pd.to_numeric(df[column], errors='coerce', downcast='integer')
+                modified_df[column] = pd.to_numeric(modified_df[column], errors='coerce', downcast='integer')
             elif data_type == 'float':
-                df[column] = pd.to_numeric(df[column], errors='coerce', downcast='float')
+                modified_df[column] = pd.to_numeric(modified_df[column], errors='coerce', downcast='float')
             elif data_type == 'datetime':
-                df[column] = pd.to_datetime(df[column], errors='coerce')
+                modified_df[column] = pd.to_datetime(modified_df[column], errors='coerce')
             elif data_type == 'boolean':
-                df[column] = df[column].astype(bool)
+                modified_df[column] = modified_df[column].astype(bool)
             
             st.write(f"Column '{column}' data type changed to '{data_type}' successfully!")
         except Exception as e:
             st.error(f"Error occurred while changing data type of column '{column}': {str(e)}")
     
-    return df    
-
+    return modified_df
 def groupby_aggregate_data(sub_df):
     st.write("### Grouping and Aggregating Data")
     st.write(sub_df.head())
@@ -214,10 +219,9 @@ def analyze_data(data):
     with col2:
         st.write("Data Types " ,data.dtypes)
 
-    all_columns = data.columns.tolist()
-    options_key = "_".join(all_columns)
-    selected_columns = st.multiselect("Select columns", options=all_columns)
-    
+        all_columns = [str(col) for col in data.columns]
+        options_key = "_".join(all_columns)
+        selected_columns = st.multiselect("Select columns", options=all_columns)    
     if selected_columns:
         sub_df = data[selected_columns]
         sub_df = select_and_rename_column(sub_df)
@@ -225,7 +229,7 @@ def analyze_data(data):
         st.write(sub_df.head())
 
         remove_duplicates(sub_df)
-        
+        st.write(sub_df.head())
         change_column_type_df = change_column_data_types(sub_df)
         st.write("Columns Types are changed",change_column_type_df)
         st.write("Description")
@@ -316,7 +320,7 @@ def show_data_correlation(data):
 
 def corr(data):
     st.write("Data correlation")
-    st.write(data.corr().style.background_gradient(cmap='RdBu', vmin=-1,vmax=1))    
+    st.write(data.corr(numeric_only=True).style.background_gradient(cmap='RdBu', vmin=-1, vmax=1))  
 
 
 def filter_rows(data):
