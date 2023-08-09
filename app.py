@@ -30,68 +30,10 @@ def load_data(file):
     return data
 
 
-
-
-
-
-def group_data(data, aggregation):
-    def select_group_column(df):
-        group_columns = st.sidebar.multiselect("Select columns for grouping", df.columns, key="group_cols")
-        return group_columns
-
-    def perform_grouping(df, group_column, aggregation):
-        if not group_column:
-            raise ValueError("Please select at least one column for grouping.")
-
-        if aggregation in ["sum", "mean", "median", "min", "max", "count"]:
-            try:
-                numeric_df = pd.to_numeric(df[group_column], errors="coerce")
-                if numeric_df.isnull().any():
-                    raise ValueError("Non-numeric values found in the selected column. Unable to perform aggregation.")
-                if numeric_df.dtype == "object":
-                    raise ValueError("Selected column is of type 'object'. Unable to perform aggregation.")
-                grouped_df = df.groupby(numeric_df).agg(aggregation)
-            except TypeError:
-                raise ValueError("Non-numeric values found in the selected column. Unable to perform aggregation.")
-            except ValueError:
-                raise ValueError(f"Error in column '{group_column}': {df[group_column]}")
-        else:
-            raise ValueError("Unsupported aggregation function. Please choose a valid statistical method.")
-
-        return grouped_df
-
-    def apply_additional_aggregation(grouped_df, df, aggregation):
-        if aggregation in ["sum", "mean", "median", "min", "max"]:
-            group_column = st.sidebar.selectbox(f"Select column for {aggregation}", df.columns, key=aggregation)
-            if aggregation == "sum":
-                grouped_df = grouped_df.groupby(group_column).sum()
-            elif aggregation == "mean":
-                grouped_df = grouped_df.groupby(group_column).mean()
-            elif aggregation == "median":
-                grouped_df = grouped_df.groupby(group_column).median()
-            elif aggregation == "min":
-                grouped_df = grouped_df.groupby(group_column).min()
-            elif aggregation == "max":
-                grouped_df = grouped_df.groupby(group_column).max()
-        elif aggregation == "count":
-            group_column = st.sidebar.selectbox("Select column for count", df.columns, key="count")
-            grouped_df = grouped_df.groupby(group_column).size().reset_index(name='count')
-        else:
-            st.warning("Unsupported aggregation function. Please choose a valid statistical method.")
-            return df
-
-        return grouped_df
-
-    group_column = select_group_column(data)
-    grouped_df = perform_grouping(data, group_column, aggregation)
-    final_grouped_df = apply_additional_aggregation(grouped_df, data, aggregation)
-    return final_grouped_df
-
-
 def select_columns(df):
     st.write("### Select Columns")
     all_columns = df.columns.tolist()
-    options_key = "_".join(all_columns)
+    #options_key = "_".join(all_columns)
     selected_columns = st.multiselect("Select columns", options=all_columns)
     
     if selected_columns:
@@ -189,7 +131,6 @@ def search_and_replace(df):
         else:
             st.warning("The search string is not present in the selected column.")
         
-    #return df
 
 #Change columns datatypes 
 def change_column_data_types(df):
@@ -227,6 +168,36 @@ def change_column_data_types(df):
             st.error(f"Error occurred while changing data type of column '{column}': {str(e)}")
     
     return df    
+
+def groupby_aggregate_data(sub_df):
+    st.write("### Grouping and Aggregating Data")
+    st.write(sub_df.head())
+    
+    # Get the list of columns from the DataFrame
+    columns = sub_df.columns.tolist()
+
+    # Get the categorical columns for grouping
+    group_columns = st.multiselect("Select categorical columns for grouping", columns)
+
+    # Get the numerical columns for aggregation
+    numerical_columns = st.multiselect("Select numerical columns for aggregation", columns)
+
+    # Get the aggregation functions from the user
+    #aggregation_functions = st.multiselect("Select aggregation functions", ['sum', 'mean', 'median', 'min', 'max'])
+    
+    # Create the aggregation dictionary
+    #aggregation = {col: func for col in numerical_columns for func in aggregation_functions}
+
+    # Perform grouping and aggregation
+    if group_columns and numerical_columns:
+        grouped_dff = sub_df.groupby(group_columns)[numerical_columns].agg(['sum', 'mean', 'median', 'min', 'max'])
+        grouped_df = grouped_dff.reset_index()  # Reset index to display category names
+       
+        st.write("### Grouped and Aggregated Data")
+        st.write(grouped_df)
+        #fig = px.bar(grouped_df, x=grouped_df.index, y=['sum'], barmode='group')
+    else:
+        st.warning("Please select at least one categorical column, one numerical column, and one aggregation function.")
   
        
 def analyze_data(data):
@@ -269,7 +240,7 @@ def analyze_data(data):
 
         #show_missing_values_percentage(sub_df)
 
-        corr(change_column_type_df)
+        st.write(corr(change_column_type_df))
         
         show_missing_values(change_column_type_df)
         show_percent_missing(change_column_type_df)
@@ -278,45 +249,10 @@ def analyze_data(data):
         show_data_shape(change_column_type_df)
         show_data_correlation(change_column_type_df)
         filter_rows(change_column_type_df)
-
-        # Allow the user to select columns for aggregation
-        aggregation_columns = st.multiselect("Select columns for aggregation", options=change_column_type_df.columns)
     
-        # Allow the user to select an aggregation function
-        aggregation_function = st.selectbox("Select an aggregation function", options=["Sum", "Mean", "Median", "Min", "Max", "Count"])
+        groupby_aggregate_data(sub_df)
     
-        # Additional options for customization
-        if aggregation_function in ["Sum", "Mean", "Median"]:
-            show_aggregated_values = st.checkbox("Show aggregated values")
-        else:
-            show_aggregated_values = False
-    
-        # Perform the aggregation
-        if aggregation_columns:
-            if aggregation_function == "Sum":
-                aggregated_values = sub_df[aggregation_columns].sum()
-            elif aggregation_function == "Mean":
-                aggregated_values = sub_df[aggregation_columns].mean()
-            elif aggregation_function == "Median":
-                aggregated_values = sub_df[aggregation_columns].median()
-            elif aggregation_function == "Min":
-                aggregated_values = sub_df[aggregation_columns].min()
-            elif aggregation_function == "Max":
-                aggregated_values = sub_df[aggregation_columns].max()
-            elif aggregation_function == "Count":
-                aggregated_values = sub_df[aggregation_columns].count()
         
-            # Display the aggregated values if selected
-            if show_aggregated_values:
-                st.write(f"Aggregated {aggregation_function} for {aggregation_columns}")
-                st.write(aggregated_values)
-        
-            # Additional customization options
-            if aggregation_function in ["Sum", "Mean", "Median"]:
-                plot_aggregated_values = st.checkbox("Plot aggregated values")
-                if plot_aggregated_values:
-                    # Plot the aggregated values
-                    st.bar_chart(aggregated_values)
 
         search_and_replace(sub_df)
 
@@ -324,10 +260,6 @@ def analyze_data(data):
 
     else:
         st.warning("Please select at least one column.")
-
-
-    
-
 
 
 def show_file_header(data):
@@ -344,11 +276,6 @@ def sort_data(data):
 def show_sorted_data(sorted_df):
     st.write("Sort Data")
     st.write(sorted_df)
-
-# Define select_group_column, perform_grouping, and apply_additional_aggregation functions here
-
-
-
 
 
 def show_missing_values(data):
