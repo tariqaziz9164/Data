@@ -229,7 +229,7 @@ def analyze_data(data):
         st.write(sub_df.head())
 
         remove_duplicates(sub_df)
-        st.write(sub_df.head())
+        
         change_column_type_df = change_column_data_types(sub_df)
         st.write("Columns Types are changed",change_column_type_df)
         st.write("Description")
